@@ -1,4 +1,5 @@
 import time
+from threading import Thread
 
 from mss import mss
 
@@ -53,7 +54,7 @@ class App:
         self.widgets = {
 
             'target_time_label': Label(
-                text='Таймер ЧЧ:ММ:СС',
+                text='Таймер ММ:СС',
                 bg=self.background_styles['bg'],
                 fg=self.background_styles['fg'],
                 font=Font(
@@ -82,7 +83,7 @@ class App:
                     family=self.fields_styles['font family'],
                     size=self.fields_styles['font size'],
                     weight=self.fields_styles['font weight']),
-                command=self.wait_for_screenshot
+                command=lambda: Thread(daemon=True, target=self.wait_for_screenshot).start()
             ),
 
             'author label': Label(
@@ -107,12 +108,12 @@ class App:
             self.widgets[widget].pack(padx=3, pady=3, fill=BOTH)
 
     def wait_for_screenshot(self):
+        self.widgets['start button'].config(state='disabled')
         target_time_str = self.widgets['target_time'].get(1.0, END)
         target_times = target_time_str.split(':')
-        hours = int(target_times[0])
-        minutes = int(target_times[1])
-        seconds = int(target_times[2])
-        seconds += minutes * 60 + hours * 3600
+        minutes = int(target_times[0])
+        seconds = int(target_times[1])
+        seconds += minutes * 60
         time.sleep(seconds)
 
         with mss() as sct:
